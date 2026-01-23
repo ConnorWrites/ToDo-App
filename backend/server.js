@@ -12,7 +12,7 @@ app.use(express.json());
 
 // Connect to MongoDataBase
 mongoose.connect(
-  'mongodb+srv://connorwritesalot_db_user:Coffeeandtea1@firstcluster.5h1hpm2.mongodb.net/todo_app'
+  'mongodb+srv://connorwritesalot_db_user:CONRADPASSWORD@firstcluster.5h1hpm2.mongodb.net/todo_app'
 );
 
 mongoose.connection.on('connected', () => {
