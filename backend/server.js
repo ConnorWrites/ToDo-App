@@ -6,14 +6,11 @@ const Todo = require('./models/Todo');
 const app = express();
 const PORT = 3000;
 
-// Middleware
-app.use(cors()); // Enable CORS for all routes
+app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDataBase
 mongoose.connect(
-  'mongodb+srv://connorwritesalot_db_user:CONRADPASSWORD@firstcluster.5h1hpm2.mongodb.net/todo_app'
-);
+  'mongodb+srv://connorwritesalot_db_user:CONRADPASSWORD@firstcluster.5h1hpm2.mongodb.net/todo_app');
 
 mongoose.connection.on('connected', () => {
   console.log('Connected to MongoDB');
@@ -23,8 +20,6 @@ mongoose.connection.on('error', (err) => {
   console.error('MongoDB connection error:', err);
 });
 
-// API's
-// Get all todos
 app.get('/todos', async (req, res) => {
   try {
     const todos = await Todo.find();
@@ -34,7 +29,6 @@ app.get('/todos', async (req, res) => {
   }
 });
 
-// Create a new todo
 app.post('/todos', async (req, res) => {
   try {
     const todo = new Todo({ text: req.body.text });
@@ -45,7 +39,6 @@ app.post('/todos', async (req, res) => {
   }
 });
 
-// Delete a todo
 app.delete('/todos/:id', async (req, res) => {
   try {
     await Todo.findByIdAndDelete(req.params.id);
@@ -55,7 +48,6 @@ app.delete('/todos/:id', async (req, res) => {
   }
 });
 
-// Toggle completed
 app.put('/todos/:id', async (req, res) => {
   try {
     const todo = await Todo.findById(req.params.id);
@@ -68,10 +60,9 @@ app.put('/todos/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to update todo' });
   }
 });
-// Serve frontend
+
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
