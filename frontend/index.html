@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo App</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input { padding: 5px; }
+    button { margin-left: 5px; }
+    li.completed { text-decoration: line-through; color: gray; }
+  </style>
+</head>
+<body>
+  <h1>Todo App</h1>
+  <h2>Login</h2>
+  <input id="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+  <button id="login-btn">Login</button>
+
+  <hr />
+
+  <h2>Add Todo</h2>
+  <input id="todo-input" placeholder="Enter new todo" />
+  <button id="add-btn">Add Todo</button>
+  
+  <ul id="todo-list"></ul>
+
+  <script src="./script.js"></script>
+</body>
+</html>
