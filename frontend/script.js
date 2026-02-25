@@ -1,12 +1,14 @@
-const apiUrl = 'http://localhost:3000/todos';
+// config
+const BASE_URL = "https://todo-backend-1xyq.onrender.com";
+const apiUrl = `${BASE_URL}/todos`;
 
-//login
+// --- LOGIN ---
 async function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
   try {
-    const res = await fetch("http://localhost:3000/auth/login", {
+    const res = await fetch(`${BASE_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
@@ -29,11 +31,9 @@ async function login() {
   }
 }
 
-document
-  .getElementById("login-btn")
-  .addEventListener("click", login);
+document.getElementById("login-btn").addEventListener("click", login);
 
-// Helper function for API requests with auth
+// --- HELPER FUNCTION FOR AUTHENTICATED REQUESTS ---
 async function apiFetch(url, options = {}) {
   const token = localStorage.getItem("token");
 
@@ -64,7 +64,7 @@ async function apiFetch(url, options = {}) {
   return res.status !== 204 ? res.json() : null;
 }
 
-//todos
+// --- TODOS FUNCTIONS ---
 async function fetchTodos() {
   try {
     const todos = await apiFetch(apiUrl);
@@ -94,7 +94,6 @@ async function fetchTodos() {
   }
 }
 
-//add todo
 async function addTodo() {
   const input = document.getElementById("todo-input");
   if (!input.value.trim()) return;
@@ -113,7 +112,6 @@ async function addTodo() {
   }
 }
 
-// delete todo
 async function deleteTodo(id) {
   try {
     await apiFetch(`${apiUrl}/${id}`, { method: "DELETE" });
@@ -123,7 +121,6 @@ async function deleteTodo(id) {
   }
 }
 
-//toggle complete
 async function toggleTodo(id) {
   try {
     await apiFetch(`${apiUrl}/${id}`, { method: "PUT" });
@@ -133,12 +130,10 @@ async function toggleTodo(id) {
   }
 }
 
-//events
-document
-  .getElementById("add-btn")
-  .addEventListener("click", addTodo);
+// --- EVENTS ---
+document.getElementById("add-btn").addEventListener("click", addTodo);
 
-//load
+// --- LOAD TODOS IF TOKEN EXISTS ---
 if (localStorage.getItem("token")) {
   fetchTodos();
 }
