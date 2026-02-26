@@ -11,6 +11,10 @@ const Todo = require('./models/Todo');
 const app = express();
 const PORT = 3000;
 
+if(!process.env.JWT_SECRET) {
+throw new Error("JWT_SECRET is not defined");
+}
+
 //middleware
 app.use(cors()); // Enable CORS for frontend
 app.use(express.json()); // Parse JSON
