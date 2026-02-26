@@ -33,6 +33,35 @@ async function login() {
 
 document.getElementById("login-btn").addEventListener("click", login);
 
+async function register() {
+  const email = document.getElementById("reg-email").value;
+  const password = document.getElementById("reg-password").value;
+
+  try {
+    const res = await fetch(`${BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Registration failed");
+      return;
+    }
+
+    // Save token and fetch todos automatically
+    localStorage.setItem("token", data.token);
+    alert("Registered & logged in!");
+    fetchTodos();
+
+  } catch (err) {
+    console.error(err);
+    alert("Server error during registration");
+  }
+}
+
 // --- HELPER FUNCTION FOR AUTHENTICATED REQUESTS ---
 async function apiFetch(url, options = {}) {
   const token = localStorage.getItem("token");
@@ -137,3 +166,5 @@ document.getElementById("add-btn").addEventListener("click", addTodo);
 if (localStorage.getItem("token")) {
   fetchTodos();
 }
+
+document.getElementById("register-btn").addEventListener("click", register);
