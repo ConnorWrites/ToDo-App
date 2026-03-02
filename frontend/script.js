@@ -1,11 +1,38 @@
-// config
+// ======================
+// CONFIG
+// ======================
 const BASE_URL = "https://todo-backend-1xyq.onrender.com";
 const apiUrl = `${BASE_URL}/todos`;
 
-// --- LOGIN ---
+// ======================
+// UI STATE
+// ======================
+function updateUI() {
+  const token = localStorage.getItem("token");
+
+  const authSection = document.getElementById("log");
+  const todoSection = document.getElementById("todo-section");
+
+  if (token) {
+    authSection.style.display = "none";
+    todoSection.style.display = "block";
+  } else {
+    authSection.style.display = "block";
+    todoSection.style.display = "none";
+  }
+}
+
+// ======================
+// AUTH
+// ======================
 async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!email || !password) {
+    alert("Please enter email and password");
+    return;
+  }
 
   try {
     const res = await fetch(`${BASE_URL}/auth/login`, {
@@ -22,7 +49,7 @@ async function login() {
     }
 
     localStorage.setItem("token", data.token);
-    alert("Logged in!");
+    updateUI();
     fetchTodos();
 
   } catch (err) {
@@ -31,11 +58,14 @@ async function login() {
   }
 }
 
-document.getElementById("login-btn").addEventListener("click", login);
-
 async function register() {
-  const email = document.getElementById("reg-email").value;
-  const password = document.getElementById("reg-password").value;
+  const email = document.getElementById("reg-email").value.trim();
+  const password = document.getElementById("reg-password").value.trim();
+
+  if (!email || !password) {
+    alert("Please enter email and password");
+    return;
+  }
 
   try {
     const res = await fetch(`${BASE_URL}/auth/register`, {
@@ -51,9 +81,8 @@ async function register() {
       return;
     }
 
-    // Save token and fetch todos automatically
     localStorage.setItem("token", data.token);
-    alert("Registered & logged in!");
+    updateUI();
     fetchTodos();
 
   } catch (err) {
@@ -62,38 +91,41 @@ async function register() {
   }
 }
 
-// --- HELPER FUNCTION FOR AUTHENTICATED REQUESTS ---
+function logout() {
+  localStorage.removeItem("token");
+  updateUI();
+}
+
+// ======================
+// AUTHENTICATED FETCH
+// ======================
 async function apiFetch(url, options = {}) {
   const token = localStorage.getItem("token");
 
   if (!token) {
-    throw new Error("No auth token found. Please log in.");
+    throw new Error("Not authenticated");
   }
 
-  const defaultHeaders = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json"
-  };
-
-  const fetchOptions = {
+  const res = await fetch(url, {
     ...options,
     headers: {
-      ...defaultHeaders,
-      ...options.headers
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
     }
-  };
-
-  const res = await fetch(url, fetchOptions);
+  });
 
   if (!res.ok) {
     const error = await res.text();
-    throw new Error(`API error: ${error}`);
+    throw new Error(error);
   }
 
-  return res.status !== 204 ? res.json() : null;
+  return res.status === 204 ? null : res.json();
 }
 
-// --- TODOS FUNCTIONS ---
+// ======================
+// TODOS
+// ======================
 async function fetchTodos() {
   try {
     const todos = await apiFetch(apiUrl);
@@ -117,7 +149,6 @@ async function fetchTodos() {
       li.appendChild(delBtn);
       list.appendChild(li);
     });
-
   } catch (err) {
     console.error(err.message);
   }
@@ -125,17 +156,18 @@ async function fetchTodos() {
 
 async function addTodo() {
   const input = document.getElementById("todo-input");
-  if (!input.value.trim()) return;
+  const text = input.value.trim();
+
+  if (!text) return;
 
   try {
     await apiFetch(apiUrl, {
       method: "POST",
-      body: JSON.stringify({ text: input.value })
+      body: JSON.stringify({ text })
     });
 
     input.value = "";
     fetchTodos();
-
   } catch (err) {
     console.error(err.message);
   }
@@ -159,12 +191,18 @@ async function toggleTodo(id) {
   }
 }
 
-// --- EVENTS ---
+// ======================
+// EVENTS
+// ======================
+document.getElementById("login-btn").addEventListener("click", login);
+document.getElementById("register-btn").addEventListener("click", register);
 document.getElementById("add-btn").addEventListener("click", addTodo);
 
-// --- LOAD TODOS IF TOKEN EXISTS ---
+// ======================
+// INIT
+// ======================
+updateUI();
+
 if (localStorage.getItem("token")) {
   fetchTodos();
 }
-
-document.getElementById("register-btn").addEventListener("click", register);

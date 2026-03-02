@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <link rel="stylesheet" href="styles.css" />
   <title>Todo App</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
@@ -13,8 +14,12 @@
   </style>
 </head>
 <body>
-  <h1>Todo App</h1>
-  <h2>Login</h2>
+<div class="header">
+<img src="https://imagizer.imageshack.com/img922/7059/aSPgG8.png" class="logo" alt="logo" loading="lazy"/>  
+  <h1>Connor's Todo App</h1></div>
+
+  <div class="login" id="log">
+    <h2>Login</h2>
   <input id="email" placeholder="Email" />
   <input id="password" type="password" placeholder="Password" />
   <button id="login-btn">Login</button>
@@ -22,15 +27,21 @@
 <input id="reg-email" placeholder="Email" />
 <input id="reg-password" type="password" placeholder="Password" />
 <button id="register-btn">Register</button>
+</div>
 
   <hr />
 
+<div id="todo-section" class="container" style="display: none" >
   <h2>Add Todo</h2>
   <input id="todo-input" placeholder="Enter new todo" />
   <button id="add-btn">Add Todo</button>
   
   <ul id="todo-list"></ul>
+</div>
 
+<footer>
+  <button onclick="logout()">Logout</button>
+</footer>
   <script src="./script.js"></script>
 </body>
 </html>
