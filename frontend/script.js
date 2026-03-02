@@ -3,6 +3,24 @@
 // ======================
 const BASE_URL = "https://todo-backend-1xyq.onrender.com";
 const apiUrl = `${BASE_URL}/todos`;
+let spinnerTimeout = null;
+
+// ======================
+// SPINNER
+// ======================
+function showSpinner() {
+  if (spinnerTimeout) return;
+
+  spinnerTimeout = setTimeout(() => {
+    document.getElementById("spinner").style.display = "block";
+  }, 300);
+}
+
+function hideSpinner() {
+  clearTimeout(spinnerTimeout);
+  spinnerTimeout = null;
+  document.getElementById("spinner").style.display = "none";
+}
 
 // ======================
 // UI STATE
@@ -34,6 +52,8 @@ async function login() {
     return;
   }
 
+  showSpinner();
+
   try {
     const res = await fetch(`${BASE_URL}/auth/login`, {
       method: "POST",
@@ -44,17 +64,17 @@ async function login() {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.message || "Login failed");
-      return;
+      throw new Error(data.message || "Login failed");
     }
 
     localStorage.setItem("token", data.token);
     updateUI();
-    fetchTodos();
+    await fetchTodos();
 
   } catch (err) {
-    console.error(err);
-    alert("Server error during login");
+    alert(err.message);
+  } finally {
+    hideSpinner();
   }
 }
 
@@ -67,6 +87,8 @@ async function register() {
     return;
   }
 
+  showSpinner();
+
   try {
     const res = await fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
@@ -77,17 +99,17 @@ async function register() {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.error || "Registration failed");
-      return;
+      throw new Error(data.error || "Registration failed");
     }
 
     localStorage.setItem("token", data.token);
     updateUI();
-    fetchTodos();
+    await fetchTodos();
 
   } catch (err) {
-    console.error(err);
-    alert("Server error during registration");
+    alert(err.message);
+  } finally {
+    hideSpinner();
   }
 }
 
