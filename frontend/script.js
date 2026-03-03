@@ -10,20 +10,15 @@ let spinnerTimeout = null;
 // ======================
 function showSpinner() {
   if (spinnerTimeout) return;
-
   spinnerTimeout = setTimeout(() => {
-    document
-      .getElementById("spinner-overlay")
-      .classList.remove("hidden");
+    document.getElementById("spinner-overlay").classList.remove("hidden");
   }, 300);
 }
 
 function hideSpinner() {
   clearTimeout(spinnerTimeout);
   spinnerTimeout = null;
-  document
-    .getElementById("spinner-overlay")
-    .classList.add("hidden");
+  document.getElementById("spinner-overlay").classList.add("hidden");
 }
 
 function setButtonsDisabled(disabled) {
@@ -39,13 +34,17 @@ function updateUI() {
   const token = localStorage.getItem("token");
   const authSection = document.getElementById("log");
   const todoSection = document.getElementById("todo-section");
+  const userInfo = document.getElementById("user-info");
 
   if (token) {
     authSection.style.display = "none";
     todoSection.style.display = "block";
+    const email = localStorage.getItem("userEmail");
+    userInfo.textContent = `Logged in as: ${email}`;
   } else {
     authSection.style.display = "block";
     todoSection.style.display = "none";
+    userInfo.textContent = "";
   }
 }
 
@@ -75,6 +74,7 @@ async function login() {
     if (!res.ok) throw new Error(data.message || "Login failed");
 
     localStorage.setItem("token", data.token);
+    localStorage.setItem("userEmail", email);
     updateUI();
     await fetchTodos();
   } catch (err) {
@@ -108,6 +108,7 @@ async function register() {
     if (!res.ok) throw new Error(data.error || "Registration failed");
 
     localStorage.setItem("token", data.token);
+    localStorage.setItem("userEmail", email);
     updateUI();
     await fetchTodos();
   } catch (err) {
@@ -120,6 +121,7 @@ async function register() {
 
 function logout() {
   localStorage.removeItem("token");
+  localStorage.removeItem("userEmail");
   updateUI();
 }
 
@@ -139,9 +141,7 @@ async function apiFetch(url, options = {}) {
     }
   });
 
-  if (!res.ok) {
-    throw new Error(await res.text());
-  }
+  if (!res.ok) throw new Error(await res.text());
 
   return res.status === 204 ? null : res.json();
 }
@@ -167,19 +167,16 @@ async function fetchTodos() {
     todos.forEach(todo => {
       const li = document.createElement("li");
       li.tabIndex = 0;
-      
+
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.checked = todo.completed;
-      checkbox.addEventListener("change", () =>
-        toggleTodo(todo._id)
-      );
+      checkbox.addEventListener("change", () => toggleTodo(todo._id));
 
       const text = document.createElement("span");
       text.textContent = todo.text;
-
-      if(todo.completed) {
-        text.classList.add("completed"); // **Last change to cross out text and not delete button
+      if (todo.completed) {
+        text.classList.add("completed"); // cross out text only
       }
 
       const delBtn = document.createElement("button");
@@ -194,11 +191,12 @@ async function fetchTodos() {
       li.appendChild(delBtn);
       list.appendChild(li);
 
-
- li.addEventListener("keydown", e => {
-        if (e.key === "Delete" || e.key === "Backspace")  {
+      // Keydown support for delete/backspace
+      li.addEventListener("keydown", e => {
+        if (e.key === "Delete" || e.key === "Backspace") {
           deleteTodo(todo._id);
-        }});
+        }
+      });
     });
   } catch (err) {
     console.error(err.message);
@@ -270,29 +268,25 @@ async function toggleTodo(id) {
 document.getElementById("login-btn").addEventListener("click", login);
 document.getElementById("register-btn").addEventListener("click", register);
 document.getElementById("add-btn").addEventListener("click", addTodo);
+
 document.getElementById("todo-input").addEventListener("keydown", e => {
-  if (e.key === "Enter") {
-    addTodo();
-  }
+  if (e.key === "Enter") addTodo();
 });
-["email", "password"].forEach(id => {
+
+["email", "password"].forEach(id =>
   document.getElementById(id).addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      login();
-    }
-  });
-});
-["reg-email", "reg-password"].forEach(id => {
+    if (e.key === "Enter") login();
+  })
+);
+
+["reg-email", "reg-password"].forEach(id =>
   document.getElementById(id).addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      register();
-    }
-  });
-});
+    if (e.key === "Enter") register();
+  })
+);
+
 // ======================
 // INIT
 // ======================
 updateUI();
-if (localStorage.getItem("token")) {
-  fetchTodos();
-}
+if (localStorage.getItem("token")) fetchTodos();
