@@ -159,6 +159,14 @@ async function fetchTodos() {
     const list = document.getElementById("todo-list");
     list.innerHTML = "";
 
+    if(!todos.length){
+      const empty = document.createElement("li");
+      empty.textContent = "You don't have any todos yet! Add your first one above 👆";
+      empty.classList.add("empty-state");
+      list.appendChild(empty);
+      return;
+    }
+
     todos.forEach(todo => {
       const li = document.createElement("li");
       li.textContent = todo.text;
