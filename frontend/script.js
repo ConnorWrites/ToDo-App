@@ -166,8 +166,8 @@ async function fetchTodos() {
 
     todos.forEach(todo => {
       const li = document.createElement("li");
-      li.className = todo.completed ? "completed" : "";
-
+      li.tabIndex = 0;
+      
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.checked = todo.completed;
@@ -177,6 +177,10 @@ async function fetchTodos() {
 
       const text = document.createElement("span");
       text.textContent = todo.text;
+
+      if(todo.completed) {
+        text.classList.add("completed"); // **Last change to cross out text and not delete button
+      }
 
       const delBtn = document.createElement("button");
       delBtn.textContent = "Delete";
@@ -189,6 +193,12 @@ async function fetchTodos() {
       li.appendChild(text);
       li.appendChild(delBtn);
       list.appendChild(li);
+
+
+ li.addEventListener("keydown", e => {
+        if (e.key === "Delete" || e.key === "Backspace")  {
+          deleteTodo(todo._id);
+        }});
     });
   } catch (err) {
     console.error(err.message);
@@ -260,7 +270,25 @@ async function toggleTodo(id) {
 document.getElementById("login-btn").addEventListener("click", login);
 document.getElementById("register-btn").addEventListener("click", register);
 document.getElementById("add-btn").addEventListener("click", addTodo);
-
+document.getElementById("todo-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    addTodo();
+  }
+});
+["email", "password"].forEach(id => {
+  document.getElementById(id).addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      login();
+    }
+  });
+});
+["reg-email", "reg-password"].forEach(id => {
+  document.getElementById(id).addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      register();
+    }
+  });
+});
 // ======================
 // INIT
 // ======================

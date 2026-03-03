@@ -104,13 +104,19 @@ li {
   gap: 0.5rem;
 }
 
-li.completed span {
+.completed{
   text-decoration: line-through;
   opacity: 0.6;
 }
 
+li span {
+  margin: 0 8px;
+}
+
 li button {
   cursor: pointer;
+  margin-left: auto;
+  font-size: 0.85rem;
 }
 
 button:hover {
