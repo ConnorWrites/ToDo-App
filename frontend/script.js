@@ -9,17 +9,25 @@ let spinnerTimeout = null;
 // SPINNER
 // ======================
 function showSpinner() {
-  if (spinnerTimeout) return;
-
   spinnerTimeout = setTimeout(() => {
-    document.getElementById("spinner").style.display = "block";
+    document
+      .getElementById("spinner-overlay")
+      .classList.remove("hidden");
   }, 300);
 }
 
 function hideSpinner() {
   clearTimeout(spinnerTimeout);
   spinnerTimeout = null;
-  document.getElementById("spinner").style.display = "none";
+  document
+    .getElementById("spinner-overlay")
+    .classList.add("hidden");
+}
+
+function setButtonsDisabled(disabled) {
+  document.querySelectorAll("button").forEach(btn => {
+    btn.disabled = disabled;
+  });
 }
 
 // ======================
@@ -27,7 +35,6 @@ function hideSpinner() {
 // ======================
 function updateUI() {
   const token = localStorage.getItem("token");
-
   const authSection = document.getElementById("log");
   const todoSection = document.getElementById("todo-section");
 
@@ -53,6 +60,7 @@ async function login() {
   }
 
   showSpinner();
+  setButtonsDisabled(true);
 
   try {
     const res = await fetch(`${BASE_URL}/auth/login`, {
@@ -70,11 +78,11 @@ async function login() {
     localStorage.setItem("token", data.token);
     updateUI();
     await fetchTodos();
-
   } catch (err) {
     alert(err.message);
   } finally {
     hideSpinner();
+    setButtonsDisabled(false);
   }
 }
 
@@ -88,6 +96,7 @@ async function register() {
   }
 
   showSpinner();
+  setButtonsDisabled(true);
 
   try {
     const res = await fetch(`${BASE_URL}/auth/register`, {
@@ -105,11 +114,11 @@ async function register() {
     localStorage.setItem("token", data.token);
     updateUI();
     await fetchTodos();
-
   } catch (err) {
     alert(err.message);
   } finally {
     hideSpinner();
+    setButtonsDisabled(false);
   }
 }
 
@@ -123,10 +132,7 @@ function logout() {
 // ======================
 async function apiFetch(url, options = {}) {
   const token = localStorage.getItem("token");
-
-  if (!token) {
-    throw new Error("Not authenticated");
-  }
+  if (!token) throw new Error("Not authenticated");
 
   const res = await fetch(url, {
     ...options,
@@ -138,8 +144,7 @@ async function apiFetch(url, options = {}) {
   });
 
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(error);
+    throw new Error(await res.text());
   }
 
   return res.status === 204 ? null : res.json();
@@ -179,7 +184,6 @@ async function fetchTodos() {
 async function addTodo() {
   const input = document.getElementById("todo-input");
   const text = input.value.trim();
-
   if (!text) return;
 
   try {
@@ -196,21 +200,13 @@ async function addTodo() {
 }
 
 async function deleteTodo(id) {
-  try {
-    await apiFetch(`${apiUrl}/${id}`, { method: "DELETE" });
-    fetchTodos();
-  } catch (err) {
-    console.error(err.message);
-  }
+  await apiFetch(`${apiUrl}/${id}`, { method: "DELETE" });
+  fetchTodos();
 }
 
 async function toggleTodo(id) {
-  try {
-    await apiFetch(`${apiUrl}/${id}`, { method: "PUT" });
-    fetchTodos();
-  } catch (err) {
-    console.error(err.message);
-  }
+  await apiFetch(`${apiUrl}/${id}`, { method: "PUT" });
+  fetchTodos();
 }
 
 // ======================
@@ -224,7 +220,4 @@ document.getElementById("add-btn").addEventListener("click", addTodo);
 // INIT
 // ======================
 updateUI();
-
-if (localStorage.getItem("token")) {
-  fetchTodos();
-}
+if (localStorage.getItem("token")) fetchTodos();
