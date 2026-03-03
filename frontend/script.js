@@ -6,9 +6,11 @@ const apiUrl = `${BASE_URL}/todos`;
 let spinnerTimeout = null;
 
 // ======================
-// SPINNER
+// SPINNER + UI LOCK
 // ======================
 function showSpinner() {
+  if (spinnerTimeout) return;
+
   spinnerTimeout = setTimeout(() => {
     document
       .getElementById("spinner-overlay")
@@ -70,10 +72,7 @@ async function login() {
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.message || "Login failed");
-    }
+    if (!res.ok) throw new Error(data.message || "Login failed");
 
     localStorage.setItem("token", data.token);
     updateUI();
@@ -106,10 +105,7 @@ async function register() {
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || "Registration failed");
-    }
+    if (!res.ok) throw new Error(data.error || "Registration failed");
 
     localStorage.setItem("token", data.token);
     updateUI();
@@ -159,9 +155,10 @@ async function fetchTodos() {
     const list = document.getElementById("todo-list");
     list.innerHTML = "";
 
-    if(!todos.length){
+    if (!todos.length) {
       const empty = document.createElement("li");
-      empty.textContent = "You don't have any todos yet! Add your first one above 👆";
+      empty.textContent =
+        "You don't have any todos yet! Add your first one above 👆";
       empty.classList.add("empty-state");
       list.appendChild(empty);
       return;
@@ -169,10 +166,17 @@ async function fetchTodos() {
 
     todos.forEach(todo => {
       const li = document.createElement("li");
-      li.textContent = todo.text;
       li.className = todo.completed ? "completed" : "";
 
-      li.addEventListener("click", () => toggleTodo(todo._id));
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = todo.completed;
+      checkbox.addEventListener("change", () =>
+        toggleTodo(todo._id)
+      );
+
+      const text = document.createElement("span");
+      text.textContent = todo.text;
 
       const delBtn = document.createElement("button");
       delBtn.textContent = "Delete";
@@ -181,6 +185,8 @@ async function fetchTodos() {
         deleteTodo(todo._id);
       });
 
+      li.appendChild(checkbox);
+      li.appendChild(text);
       li.appendChild(delBtn);
       list.appendChild(li);
     });
@@ -192,7 +198,15 @@ async function fetchTodos() {
 async function addTodo() {
   const input = document.getElementById("todo-input");
   const text = input.value.trim();
+
   if (!text) return;
+  if (text.length < 2) {
+    alert("Todo must be at least 2 characters long");
+    return;
+  }
+
+  showSpinner();
+  setButtonsDisabled(true);
 
   try {
     await apiFetch(apiUrl, {
@@ -201,20 +215,43 @@ async function addTodo() {
     });
 
     input.value = "";
-    fetchTodos();
+    await fetchTodos();
   } catch (err) {
     console.error(err.message);
+  } finally {
+    hideSpinner();
+    setButtonsDisabled(false);
   }
 }
 
 async function deleteTodo(id) {
-  await apiFetch(`${apiUrl}/${id}`, { method: "DELETE" });
-  fetchTodos();
+  showSpinner();
+  setButtonsDisabled(true);
+
+  try {
+    await apiFetch(`${apiUrl}/${id}`, { method: "DELETE" });
+    await fetchTodos();
+  } catch (err) {
+    console.error(err.message);
+  } finally {
+    hideSpinner();
+    setButtonsDisabled(false);
+  }
 }
 
 async function toggleTodo(id) {
-  await apiFetch(`${apiUrl}/${id}`, { method: "PUT" });
-  fetchTodos();
+  showSpinner();
+  setButtonsDisabled(true);
+
+  try {
+    await apiFetch(`${apiUrl}/${id}`, { method: "PUT" });
+    await fetchTodos();
+  } catch (err) {
+    console.error(err.message);
+  } finally {
+    hideSpinner();
+    setButtonsDisabled(false);
+  }
 }
 
 // ======================
@@ -228,4 +265,6 @@ document.getElementById("add-btn").addEventListener("click", addTodo);
 // INIT
 // ======================
 updateUI();
-if (localStorage.getItem("token")) fetchTodos();
+if (localStorage.getItem("token")) {
+  fetchTodos();
+}
